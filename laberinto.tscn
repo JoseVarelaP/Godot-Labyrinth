@@ -1,11 +1,20 @@
-[gd_scene load_steps=7 format=3 uid="uid://cqohhychv6q73"]
+[gd_scene load_steps=13 format=3 uid="uid://cqohhychv6q73"]
 
+[ext_resource type="Script" path="res://laberinto.gd" id="1_kh73d"]
 [ext_resource type="Texture2D" uid="uid://o3sjeykpfyf5" path="res://tile.svg" id="1_qv7de"]
 [ext_resource type="Script" path="res://Player.gd" id="2_1ys3k"]
 [ext_resource type="Texture2D" uid="uid://cvxupxlwq4qbc" path="res://icon.svg" id="2_v0tye"]
+[ext_resource type="Texture2D" uid="uid://c5rymj8cjqla8" path="res://explorado.svg" id="3_6bwx6"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_h7psh"]
-size = Vector2(112, 112)
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_sb3xc"]
+texture = ExtResource("3_6bwx6")
+texture_region_size = Vector2i(128, 128)
+0:0/0 = 0
+1:0/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_mtwmq"]
+tile_size = Vector2i(128, 128)
+sources/0 = SubResource("TileSetAtlasSource_sb3xc")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_tar3y"]
 texture = ExtResource("1_qv7de")
@@ -14,46 +23,105 @@ texture_region_size = Vector2i(128, 128)
 0:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 0:0/0/physics_layer_0/angular_velocity = 0.0
 0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-64, -64, 64, -64, 64, 64, -64, 64)
+1:0/0 = 0
+1:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
+1:0/0/physics_layer_0/angular_velocity = 0.0
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-64, -64, 64, -64, 64, 64, -64, 64)
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_fspjn"]
+texture = ExtResource("1_qv7de")
+texture_region_size = Vector2i(128, 128)
+0:0/0 = 0
+0:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
+0:0/0/physics_layer_0/angular_velocity = 0.0
+1:0/0 = 0
+1:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
+1:0/0/physics_layer_0/angular_velocity = 0.0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_uhh4g"]
+resource_name = "explorado"
+texture = ExtResource("3_6bwx6")
+texture_region_size = Vector2i(128, 128)
+0:0/0 = 0
+0:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
+0:0/0/physics_layer_0/angular_velocity = 0.0
+1:0/0 = 0
+1:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
+1:0/0/physics_layer_0/angular_velocity = 0.0
 
 [sub_resource type="TileSet" id="TileSet_kmov1"]
 tile_size = Vector2i(128, 128)
 physics_layer_0/collision_layer = 1
+custom_data_layer_0/name = "Explorado"
+custom_data_layer_0/type = 1
 sources/0 = SubResource("TileSetAtlasSource_tar3y")
+sources/1 = SubResource("TileSetAtlasSource_fspjn")
+sources/2 = SubResource("TileSetAtlasSource_uhh4g")
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_h7psh"]
+size = Vector2(112, 112)
 
 [node name="Laberinto" type="Node2D"]
+script = ExtResource("1_kh73d")
 
-[node name="CharacterBody2D" type="CharacterBody2D" parent="."]
-position = Vector2(192, 192)
-script = ExtResource("2_1ys3k")
-metadata/_edit_group_ = true
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D"]
-shape = SubResource("RectangleShape2D_h7psh")
-
-[node name="Sprite2D" type="Sprite2D" parent="CharacterBody2D"]
-position = Vector2(3.8147e-06, 3.8147e-06)
-scale = Vector2(0.875, 0.875)
-texture = ExtResource("2_v0tye")
-
-[node name="Camera2D" type="Camera2D" parent="CharacterBody2D"]
-position_smoothing_enabled = true
-
-[node name="SensorDerecha" type="RayCast2D" parent="CharacterBody2D"]
-target_position = Vector2(72, 0)
-
-[node name="SensorAbajo" type="RayCast2D" parent="CharacterBody2D"]
-target_position = Vector2(0, 72)
-
-[node name="SensorArriba" type="RayCast2D" parent="CharacterBody2D"]
-target_position = Vector2(0, -72)
-
-[node name="SensorIzquierda" type="RayCast2D" parent="CharacterBody2D"]
-target_position = Vector2(-72, 0)
+[node name="Exploracion" type="TileMap" parent="."]
+tile_set = SubResource("TileSet_mtwmq")
+cell_quadrant_size = 128
+format = 2
 
 [node name="TileMap" type="TileMap" parent="."]
 texture_filter = 1
+position = Vector2(-128, -128)
 tile_set = SubResource("TileSet_kmov1")
 format = 2
 layer_0/name = "Objetos"
-layer_0/y_sort_enabled = true
-layer_0/tile_data = PackedInt32Array(0, 0, 0, 65536, 0, 0, 131072, 0, 0, 196608, 0, 0, 262144, 0, 0, 327680, 0, 0, 393216, 0, 0, 458752, 0, 0, 524288, 0, 0, 589824, 0, 0, 589825, 0, 0, 589826, 0, 0, 589827, 0, 0, 589828, 0, 0, 589829, 0, 0, 589830, 0, 0, 589831, 0, 0, 589832, 0, 0, 589833, 0, 0, 589834, 0, 0, 589835, 0, 0, 589836, 0, 0, 589837, 0, 0, 589838, 0, 0, 589839, 0, 0, 589840, 0, 0, 589841, 0, 0, 589842, 0, 0, 524306, 0, 0, 458770, 0, 0, 393234, 0, 0, 327698, 0, 0, 262162, 0, 0, 196626, 0, 0, 131090, 0, 0, 65554, 0, 0, 18, 0, 0, 17, 0, 0, 16, 0, 0, 15, 0, 0, 14, 0, 0, 13, 0, 0, 12, 0, 0, 11, 0, 0, 10, 0, 0, 9, 0, 0, 8, 0, 0, 7, 0, 0, 6, 0, 0, 5, 0, 0, 4, 0, 0, 3, 0, 0, 2, 0, 0, 1, 0, 0, 65538, 0, 0, 131074, 0, 0, 196610, 0, 0, 262146, 0, 0, 327682, 0, 0, 393218, 0, 0, 327684, 0, 0, 327685, 0, 0, 327686, 0, 0, 327687, 0, 0, 327688, 0, 0, 327689, 0, 0, 131075, 0, 0, 131076, 0, 0, 131077, 0, 0, 131078, 0, 0, 131079, 0, 0, 65539, 0, 0, 65540, 0, 0, 65541, 0, 0, 65542, 0, 0, 65543, 0, 0, 65544, 0, 0, 131080, 0, 0, 196616, 0, 0, 262152, 0, 0, 196614, 0, 0, 196615, 0, 0, 262151, 0, 0, 458761, 0, 0, 458760, 0, 0, 458759, 0, 0, 458758, 0, 0, 458757, 0, 0, 458756, 0, 0, 524292, 0, 0, 458754, 0, 0, 393226, 0, 0)
+layer_0/tile_data = PackedInt32Array(0, 0, 0, 65536, 0, 0, 131072, 0, 0, 262144, 0, 0, 327680, 0, 0, 393216, 0, 0, 458752, 0, 0, 524288, 0, 0, 589824, 0, 0, 589825, 0, 0, 589826, 0, 0, 589827, 0, 0, 589828, 0, 0, 589829, 0, 0, 589830, 0, 0, 589831, 0, 0, 589832, 0, 0, 589833, 0, 0, 589834, 0, 0, 589835, 0, 0, 589836, 0, 0, 589837, 0, 0, 589838, 0, 0, 589839, 0, 0, 589840, 0, 0, 589841, 0, 0, 589842, 0, 0, 524306, 0, 0, 458770, 0, 0, 393234, 0, 0, 327698, 0, 0, 262162, 0, 0, 196626, 0, 0, 131090, 0, 0, 65554, 0, 0, 18, 0, 0, 17, 0, 0, 16, 0, 0, 15, 0, 0, 14, 0, 0, 13, 0, 0, 12, 0, 0, 11, 0, 0, 10, 0, 0, 9, 0, 0, 8, 0, 0, 7, 0, 0, 6, 0, 0, 5, 0, 0, 4, 0, 0, 3, 0, 0, 2, 0, 0, 1, 0, 0, 65538, 0, 0, 131074, 0, 0, 196610, 0, 0, 393218, 0, 0, 327684, 0, 0, 327685, 0, 0, 327686, 0, 0, 327687, 0, 0, 327688, 0, 0, 327689, 0, 0, 131075, 0, 0, 131076, 0, 0, 131077, 0, 0, 131078, 0, 0, 131079, 0, 0, 65539, 0, 0, 65540, 0, 0, 65541, 0, 0, 65542, 0, 0, 65543, 0, 0, 65544, 0, 0, 131080, 0, 0, 196616, 0, 0, 262152, 0, 0, 196614, 0, 0, 196615, 0, 0, 262151, 0, 0, 458761, 0, 0, 458760, 0, 0, 458759, 0, 0, 458758, 0, 0, 458757, 0, 0, 458756, 0, 0, 524292, 0, 0, 458754, 0, 0, 393226, 0, 0, 196608, 0, 0, 262146, 0, 0, 327682, 0, 0)
+
+[node name="Personaje" type="CharacterBody2D" parent="."]
+position = Vector2(64, 64)
+script = ExtResource("2_1ys3k")
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Personaje"]
+shape = SubResource("RectangleShape2D_h7psh")
+
+[node name="Sprite2D" type="Sprite2D" parent="Personaje"]
+texture = ExtResource("2_v0tye")
+
+[node name="Camera2D" type="Camera2D" parent="Personaje"]
+offset = Vector2(64, 64)
+position_smoothing_enabled = true
+
+[node name="SensorDerecha" type="RayCast2D" parent="Personaje"]
+target_position = Vector2(72, 0)
+
+[node name="SensorAbajo" type="RayCast2D" parent="Personaje"]
+target_position = Vector2(0, 72)
+
+[node name="SensorArriba" type="RayCast2D" parent="Personaje"]
+target_position = Vector2(0, -72)
+
+[node name="SensorIzquierda" type="RayCast2D" parent="Personaje"]
+target_position = Vector2(-72, 0)
+
+[node name="L-IZQ" type="Label" parent="Personaje"]
+offset_left = -128.0
+offset_right = -88.0
+offset_bottom = 23.0
+
+[node name="L-ABA" type="Label" parent="Personaje"]
+offset_top = 80.0
+offset_right = 40.0
+offset_bottom = 103.0
+
+[node name="L-ARR" type="Label" parent="Personaje"]
+offset_top = -100.0
+offset_right = 40.0
+offset_bottom = -77.0
+
+[node name="L-DER" type="Label" parent="Personaje"]
+offset_left = 80.0
+offset_right = 120.0
+offset_bottom = 23.0
+
+[connection signal="collided" from="Personaje" to="." method="_on_personaje_collided"]
