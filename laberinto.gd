@@ -8,7 +8,7 @@ func getTilePosition():
 
 func MarkCellIfPassed():
 	var cell = getTilePosition()
-	var data = $Exploracion.get_cell_tile_data(0, cell) as TileData
+	# var data = $Exploracion.get_cell_tile_data(0, cell) as TileData
 	if cell != lastCell:
 		print(cell)
 		if lastCell != null:
