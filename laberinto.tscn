@@ -90,19 +90,20 @@ texture = ExtResource("2_v0tye")
 
 [node name="Camera2D" type="Camera2D" parent="Personaje"]
 offset = Vector2(64, 64)
+zoom = Vector2(0.6, 0.6)
 position_smoothing_enabled = true
 
 [node name="SensorDerecha" type="RayCast2D" parent="Personaje"]
-target_position = Vector2(72, 0)
+target_position = Vector2(64, 0)
 
 [node name="SensorAbajo" type="RayCast2D" parent="Personaje"]
-target_position = Vector2(0, 72)
+target_position = Vector2(2.08165e-12, 64)
 
 [node name="SensorArriba" type="RayCast2D" parent="Personaje"]
-target_position = Vector2(0, -72)
+target_position = Vector2(2.08165e-12, -64)
 
 [node name="SensorIzquierda" type="RayCast2D" parent="Personaje"]
-target_position = Vector2(-72, 0)
+target_position = Vector2(-64, 2.08165e-12)
 
 [node name="L-IZQ" type="Label" parent="Personaje"]
 offset_left = -128.0
@@ -124,4 +125,4 @@ offset_left = 80.0
 offset_right = 120.0
 offset_bottom = 23.0
 
-[connection signal="collided" from="Personaje" to="." method="_on_personaje_collided"]
+[connection signal="TouchedTile" from="Personaje" to="." method="_on_personaje_touched_tile"]
