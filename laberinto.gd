@@ -9,6 +9,10 @@ func getTilePosition():
 func getGlobalTilePosition(given_pos):
 	var pos = $Exploracion.local_to_map( given_pos ) as Vector2i
 	return pos
+	
+func isValidBlock(cursorTilePos):
+	var data = $TileMap.get_cell_atlas_coords(0, cursorTilePos) as Vector2i
+	return data == Vector2i(0,0)
 
 func MarkCellIfPassed():
 	var cell = getTilePosition()
@@ -37,8 +41,11 @@ func _process(delta):
 	
 func _input(ev):
 	if ev is InputEventMouseButton and ev.button_index == MOUSE_BUTTON_LEFT:
+		var position_cursor = getGlobalTilePosition(get_global_mouse_position())
+		if not isValidBlock( position_cursor ):
+			return
 		$GuiInformation.set_visible(false)
-		$Personaje.setExpectedGoal( getGlobalTilePosition(get_global_mouse_position()) )
+		$Personaje.setExpectedGoal( position_cursor )
 		#print("click")
 
 func _on_personaje_touched_tile(given_collision : Vector2i):

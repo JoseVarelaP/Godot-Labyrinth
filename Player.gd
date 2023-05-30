@@ -14,8 +14,9 @@ const SPEED = 700.0
 const DEBUG = true
 var expected_goal = null
 var hasReachedGoal = true
+var visitedTilesIndx = -1
 
-var lastVisitedLocations = []
+var lastVisitedLocations = PackedVector2Array([])
 # Mantiene la utilma ubicación que contiene un lugar no explorado.
 var lastPossibleFreeLocation = null
 
@@ -49,7 +50,7 @@ func hasAnyPossibleLocations():
 	var neighborPositions = getAvailableLocations()
 	var sensors = getSensorStatus()
 	for i in range(len(neighborPositions)):
-		if not neighborPositions[i] and not sensors[i]:
+		if not neighborPositions[i]:
 			return true
 			
 	return false
@@ -77,9 +78,6 @@ func wasTileAlreadyExplored(curPosition : Vector2i, offset : Vector2i, debugInfo
 	var colisionData = ColisionMap.get_cell_atlas_coords(0, pos) as Vector2i
 	
 	if data:
-		#if debugInfo:
-			#print( data, colisionData )
-			
 		return data == Vector2i(1,0)
 	
 	return false
@@ -94,16 +92,13 @@ func tilePositionToGlobal(tilePosition : Vector2i):
 func MoveToNewLocation(delta : float, newposition : Vector2i):
 	destination = newposition
 	var GlobalNewPosition = tilePositionToGlobal(newposition)
-	# print( global_position, GlobalNewPosition )
 	global_position = global_position.move_toward(GlobalNewPosition, delta*SPEED )
 	
 func DetermineNewDestination():
 	var current_position = getTilePosition()
 	
-	#print("\n")
 	# Si estamos actualmente en un bloque ya visitado, encuentra una manera de salir de ahi.
 	if currentTileHasBeenVisited(current_position):
-		# print("already visited")
 		if not wasTileAlreadyExplored(current_position, Vector2i(0,1), true) and not $SensorAbajo.is_colliding():
 			current_position.y += 1
 			return current_position
@@ -116,7 +111,7 @@ func DetermineNewDestination():
 		if not wasTileAlreadyExplored(current_position, Vector2i(-1,0), true) and not $SensorIzquierda.is_colliding():
 			current_position.x -= 1
 			return current_position
-		
+	"""
 	# If we reached here, we need to go back.
 	if (wasTileAlreadyExplored(current_position, Vector2i(0,-1))):
 		if $SensorArriba.is_colliding():
@@ -141,6 +136,7 @@ func DetermineNewDestination():
 			return null
 		current_position.y += 1
 		return current_position
+	"""
 	return null
 	
 func _process(delta):
@@ -169,21 +165,25 @@ func _process(delta):
 			
 			if hasAnyPossibleLocations():
 				lastPossibleFreeLocation = newposition
-			
-			if not lastVisitedLocations.has(destination):
-				lastVisitedLocations.append( destination )
 				
 			if destination == expected_goal:
 				hasReachedGoal = true
 				ReachedGoal.emit()
 				
 			destination = null
-			# print( hasAnyPossibleLocations() )
-		return
+			
+			if lastVisitedLocations.has(newposition):
+				return
+				
+			print(newposition)
+			lastVisitedLocations.append( newposition )
+			visitedTilesIndx += 1
 	else:
 		var newLocation = DetermineNewDestination()
 		if newLocation:
 			MoveToNewLocation(delta, newLocation)
 		else:
-			# Hay que volver.
-			MoveToNewLocation(delta, lastPossibleFreeLocation)
+			visitedTilesIndx -= 1
+			MoveToNewLocation(delta,  lastVisitedLocations[visitedTilesIndx] )
+			# Quita el elemento de la lista, hay que volver.
+			lastVisitedLocations.remove_at(visitedTilesIndx+1)
