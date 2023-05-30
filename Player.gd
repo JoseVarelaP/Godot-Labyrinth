@@ -1,16 +1,7 @@
-extends CharacterBody2D	
-
-"""
-NOTA
-
-- Intentar realizar todo el proceso por medio de tiles, y calcular el normal
-basado en la posición del tile disponible de la posición actual del jugador.
-
-- Realizar un historial que toma el registro de los lugares ya utilizados.
-"""
+extends CharacterBody2D
 
 var destination = null
-const SPEED = 700.0
+const SPEED = 1500.0
 const DEBUG = true
 var expected_goal = null
 var hasReachedGoal = true
@@ -18,7 +9,6 @@ var visitedTilesIndx = -1
 
 var lastVisitedLocations = PackedVector2Array([])
 # Mantiene la utilma ubicación que contiene un lugar no explorado.
-var lastPossibleFreeLocation = null
 
 signal TouchedTile(given_collision)
 signal ReachedGoal()
@@ -26,40 +16,6 @@ signal ReachedGoal()
 func setExpectedGoal(goal):
 	expected_goal = goal
 	hasReachedGoal = false
-
-func getSensorStatus():
-	return [
-		$SensorIzquierda.is_colliding(),
-		$SensorAbajo.is_colliding(),
-		$SensorArriba.is_colliding(),
-		$SensorDerecha.is_colliding()
-	]
-
-func getAvailableLocations():
-	var neighbours = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
-	var sensors = getSensorStatus()
-	var pos = getTilePosition()
-	var result = []
-	
-	for i in range(len(neighbours)):
-		result.append( wasTileAlreadyExplored(pos, neighbours[i]) )
-			
-	return result
-
-func hasAnyPossibleLocations():
-	var neighborPositions = getAvailableLocations()
-	var sensors = getSensorStatus()
-	for i in range(len(neighborPositions)):
-		if not neighborPositions[i]:
-			return true
-			
-	return false
-	
-func allSensorsDisabled():
-	return (not $SensorIzquierda.is_colliding() and
-		not $SensorAbajo.is_colliding() and
-		not $SensorArriba.is_colliding() and
-		not $SensorDerecha.is_colliding())
 		
 func getTilePosition():
 	var TileMapExp = get_parent().get_node("Exploracion") as TileMap
@@ -99,6 +55,10 @@ func DetermineNewDestination():
 	
 	# Si estamos actualmente en un bloque ya visitado, encuentra una manera de salir de ahi.
 	if currentTileHasBeenVisited(current_position):
+		"""
+		NOTA: Aqui puede tener una mejora en la busqueda de posición calculando el normal
+		del tile *meta* con el actual.
+		"""
 		if not wasTileAlreadyExplored(current_position, Vector2i(0,1), true) and not $SensorAbajo.is_colliding():
 			current_position.y += 1
 			return current_position
@@ -111,32 +71,6 @@ func DetermineNewDestination():
 		if not wasTileAlreadyExplored(current_position, Vector2i(-1,0), true) and not $SensorIzquierda.is_colliding():
 			current_position.x -= 1
 			return current_position
-	"""
-	# If we reached here, we need to go back.
-	if (wasTileAlreadyExplored(current_position, Vector2i(0,-1))):
-		if $SensorArriba.is_colliding():
-			return null
-		current_position.y -= 1
-		return current_position
-	# Derecha
-	if (wasTileAlreadyExplored(current_position, Vector2i(1,0))):
-		if $SensorDerecha.is_colliding():
-			return null
-		current_position.x += 1
-		return current_position
-	# Izquierda
-	if (wasTileAlreadyExplored(current_position, Vector2i(-1,0))):
-		if $SensorIzquierda.is_colliding():
-			return null
-		current_position.x -= 1
-		return current_position
-	# Abajo
-	if (wasTileAlreadyExplored(current_position, Vector2i(0,1))):
-		if $SensorAbajo.is_colliding():
-			return null
-		current_position.y += 1
-		return current_position
-	"""
 	return null
 	
 func _process(delta):
@@ -144,45 +78,42 @@ func _process(delta):
 		return
 		
 	var newposition = getTilePosition()
-		
-	if DEBUG:
-		var stats = getSensorStatus()
-		$"L-IZQ".set_text( "true" if stats[0] else "false" )
-		$"L-ABA".set_text( "true" if stats[1] else "false" )
-		$"L-ARR".set_text( "true" if stats[2] else "false" )
-		$"L-DER".set_text( "true" if stats[3] else "false" )
 	
 	if destination != null:
 		var GlobalNewPosition = tilePositionToGlobal(destination)
-		# print(newposition, destination)
 		if (destination.y > newposition.y) and $SensorAbajo.is_colliding():
 			destination = null
 			TouchedTile.emit( newposition )
 			return
 		global_position = global_position.move_toward(GlobalNewPosition, delta*SPEED )
-		if GlobalNewPosition == global_position:
-			TouchedTile.emit( newposition )
+		
+		# Si no estamos en la posición destino (local), entonces no hay que realizar
+		# las operaciones abajo.
+		if GlobalNewPosition != global_position:
+			return
 			
-			if hasAnyPossibleLocations():
-				lastPossibleFreeLocation = newposition
-				
-			if destination == expected_goal:
-				hasReachedGoal = true
-				ReachedGoal.emit()
-				
-			destination = null
+		# Transmite a Laberinto que el Personaje ha tocado este tile.
+		TouchedTile.emit( newposition )
+		
+		# Si este tile es la meta, termina el programa.
+		if destination == expected_goal:
+			hasReachedGoal = true
+			ReachedGoal.emit()
 			
-			if lastVisitedLocations.has(newposition):
-				return
-				
-			print(newposition)
-			lastVisitedLocations.append( newposition )
-			visitedTilesIndx += 1
+		# Reinicia el destino.
+		destination = null
+		
+		if lastVisitedLocations.has(newposition):
+			return
+			
+		lastVisitedLocations.append( newposition )
+		visitedTilesIndx += 1
 	else:
 		var newLocation = DetermineNewDestination()
 		if newLocation:
 			MoveToNewLocation(delta, newLocation)
 		else:
+			# Vamos para atrás.
 			visitedTilesIndx -= 1
 			MoveToNewLocation(delta,  lastVisitedLocations[visitedTilesIndx] )
 			# Quita el elemento de la lista, hay que volver.
