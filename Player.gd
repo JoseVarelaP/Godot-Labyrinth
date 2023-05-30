@@ -10,7 +10,7 @@ basado en la posición del tile disponible de la posición actual del jugador.
 """
 
 var destination = null
-const SPEED = 300.0
+const SPEED = 700.0
 const DEBUG = true
 var expected_goal = null
 var hasReachedGoal = true
@@ -33,15 +33,23 @@ func getSensorStatus():
 		$SensorArriba.is_colliding(),
 		$SensorDerecha.is_colliding()
 	]
-	
-func hasAnyPossibleLocations():
+
+func getAvailableLocations():
 	var neighbours = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
 	var sensors = getSensorStatus()
 	var pos = getTilePosition()
+	var result = []
 	
 	for i in range(len(neighbours)):
-		#var tempLocation = pos + neighbours[i]
-		if not wasTileAlreadyExplored(pos, neighbours[i]) and not sensors[i]:
+		result.append( wasTileAlreadyExplored(pos, neighbours[i]) )
+			
+	return result
+
+func hasAnyPossibleLocations():
+	var neighborPositions = getAvailableLocations()
+	var sensors = getSensorStatus()
+	for i in range(len(neighborPositions)):
+		if not neighborPositions[i] and not sensors[i]:
 			return true
 			
 	return false
@@ -69,10 +77,10 @@ func wasTileAlreadyExplored(curPosition : Vector2i, offset : Vector2i, debugInfo
 	var colisionData = ColisionMap.get_cell_atlas_coords(0, pos) as Vector2i
 	
 	if data:
-		if debugInfo:
-			print( data, colisionData )
+		#if debugInfo:
+			#print( data, colisionData )
 			
-		return data == Vector2i(1,0) and colisionData == Vector2i(0,0)
+		return data == Vector2i(1,0)
 	
 	return false
 	
@@ -92,7 +100,7 @@ func MoveToNewLocation(delta : float, newposition : Vector2i):
 func DetermineNewDestination():
 	var current_position = getTilePosition()
 	
-	print("\n")
+	#print("\n")
 	# Si estamos actualmente en un bloque ya visitado, encuentra una manera de salir de ahi.
 	if currentTileHasBeenVisited(current_position):
 		# print("already visited")
@@ -108,25 +116,30 @@ func DetermineNewDestination():
 		if not wasTileAlreadyExplored(current_position, Vector2i(-1,0), true) and not $SensorIzquierda.is_colliding():
 			current_position.x -= 1
 			return current_position
-		return null
-	
-	# Abajo
+		
+	# If we reached here, we need to go back.
 	if (wasTileAlreadyExplored(current_position, Vector2i(0,-1))):
-		if $SensorAbajo.is_colliding():
+		if $SensorArriba.is_colliding():
 			return null
-		current_position.y += 1
+		current_position.y -= 1
 		return current_position
 	# Derecha
-	if (wasTileAlreadyExplored(current_position, Vector2i(-1,0))):
+	if (wasTileAlreadyExplored(current_position, Vector2i(1,0))):
 		if $SensorDerecha.is_colliding():
 			return null
 		current_position.x += 1
 		return current_position
 	# Izquierda
-	if (not wasTileAlreadyExplored(current_position, Vector2i(-1,0))):
+	if (wasTileAlreadyExplored(current_position, Vector2i(-1,0))):
 		if $SensorIzquierda.is_colliding():
 			return null
 		current_position.x -= 1
+		return current_position
+	# Abajo
+	if (wasTileAlreadyExplored(current_position, Vector2i(0,1))):
+		if $SensorAbajo.is_colliding():
+			return null
+		current_position.y += 1
 		return current_position
 	return null
 	
@@ -154,6 +167,9 @@ func _process(delta):
 		if GlobalNewPosition == global_position:
 			TouchedTile.emit( newposition )
 			
+			if hasAnyPossibleLocations():
+				lastPossibleFreeLocation = newposition
+			
 			if not lastVisitedLocations.has(destination):
 				lastVisitedLocations.append( destination )
 				
@@ -168,3 +184,6 @@ func _process(delta):
 		var newLocation = DetermineNewDestination()
 		if newLocation:
 			MoveToNewLocation(delta, newLocation)
+		else:
+			# Hay que volver.
+			MoveToNewLocation(delta, lastPossibleFreeLocation)
