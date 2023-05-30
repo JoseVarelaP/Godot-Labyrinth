@@ -12,12 +12,19 @@ basado en la posición del tile disponible de la posición actual del jugador.
 var destination = null
 const SPEED = 300.0
 const DEBUG = true
+var expected_goal = null
+var hasReachedGoal = true
 
 var lastVisitedLocations = []
 # Mantiene la utilma ubicación que contiene un lugar no explorado.
 var lastPossibleFreeLocation = null
 
 signal TouchedTile(given_collision)
+signal ReachedGoal()
+
+func setExpectedGoal(goal):
+	expected_goal = goal
+	hasReachedGoal = false
 
 func getSensorStatus():
 	return [
@@ -124,6 +131,9 @@ func DetermineNewDestination():
 	return null
 	
 func _process(delta):
+	if hasReachedGoal:
+		return
+		
 	var newposition = getTilePosition()
 		
 	if DEBUG:
@@ -146,6 +156,10 @@ func _process(delta):
 			
 			if not lastVisitedLocations.has(destination):
 				lastVisitedLocations.append( destination )
+				
+			if destination == expected_goal:
+				hasReachedGoal = true
+				ReachedGoal.emit()
 				
 			destination = null
 			# print( hasAnyPossibleLocations() )
