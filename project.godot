@@ -11,6 +11,9 @@ config_version=5
 [application]
 
 config/name="Laberinto"
+config/description="Programa en Godot 4 que realiza la busqueda de una ruta para un personaje, donde llegará a su destino.
+
+- Jose_Varela"
 run/main_scene="res://laberinto.tscn"
 config/features=PackedStringArray("4.0", "Mobile")
 config/icon="res://icon.svg"

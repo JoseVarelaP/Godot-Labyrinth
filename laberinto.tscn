@@ -107,26 +107,6 @@ target_position = Vector2(2.08165e-12, -64)
 [node name="SensorIzquierda" type="RayCast2D" parent="Personaje"]
 target_position = Vector2(-64, 2.08165e-12)
 
-[node name="L-IZQ" type="Label" parent="Personaje"]
-offset_left = -128.0
-offset_right = -88.0
-offset_bottom = 23.0
-
-[node name="L-ABA" type="Label" parent="Personaje"]
-offset_top = 80.0
-offset_right = 40.0
-offset_bottom = 103.0
-
-[node name="L-ARR" type="Label" parent="Personaje"]
-offset_top = -100.0
-offset_right = 40.0
-offset_bottom = -77.0
-
-[node name="L-DER" type="Label" parent="Personaje"]
-offset_left = 80.0
-offset_right = 120.0
-offset_bottom = 23.0
-
 [node name="GuiInformation" type="CanvasLayer" parent="."]
 
 [node name="ColorRect" type="ColorRect" parent="GuiInformation"]
